@@ -1,9 +1,11 @@
 import argparse
 import sys
 import os
+import argparse
 import tkinter as tk
 from tkinter import messagebox, scrolledtext
 # 注意：如果包名拼写错误（ultility_toolkit → utility_toolkit），需同步修改
+from ultility_toolkit.latex_table_designer import LaTeXTableDesignerGUI
 from ultility_toolkit.file_tools import FileRenamer, FileConverter, FileSearcher
 from ultility_toolkit.data_viz import DataPlotter, DataAnalyzer
 from ultility_toolkit.network_tools import IPQuery, PortScanner, URLChecker
@@ -120,19 +122,19 @@ def choose_latex_mode() -> bool:
             print(f"输入无效：{user_choice}，请输入1或2！")
 
 def main():
-    # 无命令行参数时启动GUI
+    # 无命令行参数时启动GUI（保留原有逻辑，可选择是否整合表格设计器到主GUI）
     if len(sys.argv) == 1:
-        run_latex_gui()
+        run_latex_gui()  # 原有LaTeX转换GUI，若需替换为表格设计器可改为：LaTeXTableDesignerGUI().run()
         return
     
     parser = argparse.ArgumentParser(
         prog="ultility-toolkit",
-        description="多功能Python实用工具集 v0.1.0 | 支持文件处理/数据可视化/网络工具/文本转LaTeX",
+        description="多功能Python实用工具集 v0.1.0 | 支持文件处理/数据可视化/网络工具/文本转LaTeX/LaTeX表格设计",
         epilog="项目地址：https://github.com/your-username/python-ultility-toolkit"
     )
     subparsers = parser.add_subparsers(dest="command", help="请选择功能模块")
 
-    # 1. 文件重命名
+    # 1. 文件重命名（原有）
     rename_parser = subparsers.add_parser("rename", help="文件批量重命名")
     rename_parser.add_argument("--dir", required=True, help="目标目录")
     rename_parser.add_argument("--prefix", help="前缀重命名（如--prefix file_）")
@@ -142,7 +144,7 @@ def main():
     rename_parser.add_argument("--regex-repl", help="正则替换值")
     rename_parser.add_argument("--ext", help="扩展名过滤（如.txt）")
 
-    # 2. 文件格式转换
+    # 2. 文件格式转换（原有）
     file_conv_parser = subparsers.add_parser("file-conv", help="文件格式转换")
     file_conv_parser.add_argument("--file", help="单个目标文件")
     file_conv_parser.add_argument("--dir", help="目标目录")
@@ -151,7 +153,7 @@ def main():
     file_conv_parser.add_argument("--new-ext", help="新扩展名（change-ext时用）")
     file_conv_parser.add_argument("--delimiter", default=",", help="分隔符（默认,）")
 
-    # 3. 文件检索
+    # 3. 文件检索（原有）
     file_search_parser = subparsers.add_parser("file-search", help="文件内容/名称检索")
     file_search_parser.add_argument("--dir", required=True, help="目标目录")
     file_search_parser.add_argument("--keyword", help="检索关键词（name/content时用）")
@@ -160,7 +162,7 @@ def main():
     file_search_parser.add_argument("--min-size", type=int, help="最小文件大小(字节)")
     file_search_parser.add_argument("--max-size", type=int, help="最大文件大小(字节)")
 
-    # 4. 数据可视化
+    # 4. 数据可视化（原有）
     plot_parser = subparsers.add_parser("plot", help="数据可视化绘图")
     plot_parser.add_argument("--file", required=True, help="CSV/Excel数据文件")
     plot_parser.add_argument("--type", required=True, choices=["bar", "line", "pie", "scatter", "hist"], help="图表类型")
@@ -169,45 +171,49 @@ def main():
     plot_parser.add_argument("--x-col", help="X轴列名")
     plot_parser.add_argument("--y-col", help="Y轴列名")
 
-    # 5. 数据统计分析
+    # 5. 数据统计分析（原有）
     data_analyze_parser = subparsers.add_parser("data-analyze", help="数据统计分析")
     data_analyze_parser.add_argument("--file", required=True, help="CSV/Excel数据文件")
     data_analyze_parser.add_argument("--type", required=True, choices=["basic", "corr", "missing", "outlier"], help="分析类型")
     data_analyze_parser.add_argument("--col", help="分析列名（outlier时必填）")
 
-    # 6. IP查询
+    # 6. IP查询（原有）
     ip_query_parser = subparsers.add_parser("ip-query", help="IP地址/域名解析")
     ip_query_parser.add_argument("--ip", help="查询IP（默认本机）")
     ip_query_parser.add_argument("--domain", help="解析域名到IP")
 
-    # 7. 端口扫描
+    # 7. 端口扫描（原有）
     port_scan_parser = subparsers.add_parser("port-scan", help="端口扫描")
     port_scan_parser.add_argument("--host", required=True, help="目标主机/IP")
     port_scan_parser.add_argument("--start", type=int, default=1, help="起始端口")
     port_scan_parser.add_argument("--end", type=int, default=1024, help="结束端口")
     port_scan_parser.add_argument("--common", action="store_true", help="扫描常见端口并显示服务")
 
-    # 8. URL检测
+    # 8. URL检测（原有）
     url_check_parser = subparsers.add_parser("url-check", help="URL有效性检测")
     url_check_parser.add_argument("--url", help="单个检测URL")
     url_check_parser.add_argument("--file", help="批量检测URL文件（每行一个URL）")
 
-    # 9. LaTeX转换
+    # 9. LaTeX转换（原有）
     latex_parser = subparsers.add_parser("latex-convert", help="文本转LaTeX格式")
     latex_parser.add_argument("--input", help="输入文本文件")
     latex_parser.add_argument("--output", help="输出LaTeX文件")
     latex_parser.add_argument("--no-env", action="store_false", dest="add_env", default=True, 
                              help="直接生成无环境的文段片段")
 
+    # ========== 新增：10. LaTeX表格设计器 ==========
+    latex_table_parser = subparsers.add_parser("latex-table", help="LaTeX表格可视化设计器（生成tabular代码）")
+    # 无需额外参数，仅启动GUI即可
+
     args = parser.parse_args()
 
-    # 无参数时提示选择功能
+    # 无参数时提示选择功能（原有）
     if not args.command:
         print("❌ 错误：请指定要运行的功能模块！")
         parser.print_help()
         sys.exit(1)
 
-    # ========== 各功能逻辑（无修改） ==========
+    # ========== 各功能逻辑（原有+新增） ==========
     if args.command == "rename":
         try:
             renamer = FileRenamer(args.dir)
@@ -394,6 +400,23 @@ def main():
                     print("💡 提示：可直接复制插入已有LaTeX文档")
         except Exception as e:
             print(f"失败：{str(e)}")
+            sys.exit(1)
+
+    # ========== 新增：LaTeX表格设计器调用逻辑 ==========
+    elif args.command == "latex-table":
+        try:
+            print("🚀 启动LaTeX表格可视化设计器...")
+            print("💡 提示：关闭设计器窗口即可退出该功能")
+            # 实例化并启动表格设计器GUI
+            table_designer = LaTeXTableDesignerGUI()
+            table_designer.run()
+            print("✅ 表格设计器已正常退出")
+        except ImportError as e:
+            print(f"❌ 失败：缺少表格设计器依赖 - {str(e)}")
+            print("💡 请执行：pip install pyperclip")
+            sys.exit(1)
+        except Exception as e:
+            print(f"❌ 失败：{str(e)}")
             sys.exit(1)
 
     else:
