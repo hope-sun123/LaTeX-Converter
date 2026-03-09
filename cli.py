@@ -8,6 +8,7 @@ from ultility_toolkit.file_tools import FileRenamer, FileConverter, FileSearcher
 from ultility_toolkit.data_viz import DataPlotter, DataAnalyzer
 from ultility_toolkit.network_tools import IPQuery, PortScanner, URLChecker
 from ultility_toolkit.latex_converter import Text2LaTeXConverter
+from ultility_toolkit.bib_manager import get_bibtex_from_doi, append_to_bib_file
 
 def run_latex_gui():
     """LaTeX转换的GUI入口（左右分栏版）"""
@@ -198,6 +199,11 @@ def main():
     latex_parser.add_argument("--output", help="输出LaTeX文件")
     latex_parser.add_argument("--no-env", action="store_false", dest="add_env", default=True, 
                              help="直接生成无环境的文段片段")
+
+    # 10. 文献BibTeX自动化 (请确认这段话在 args = parser.parse_args() 这一行之前)
+    bib_parser = subparsers.add_parser("bib", help="文献BibTeX自动化管理")
+    bib_parser.add_argument("--doi", required=True, help="输入文献的DOI号")
+    bib_parser.add_argument("--save", action="store_true", help="是否自动保存")
 
     args = parser.parse_args()
 
@@ -395,7 +401,31 @@ def main():
         except Exception as e:
             print(f"失败：{str(e)}")
             sys.exit(1)
+    
+    elif args.command == "bib":
+        try:
+            print(f"🔍 正在检索 DOI: {args.doi} ...")
+            bib_content = get_bibtex_from_doi(args.doi)
+            
+            print("\n" + "="*50)
+            print("✨ 获取到的 BibTeX 条目：")
+            print("-" * 50)
+            print(bib_content)
+            print("="*50)
 
+            # 如果用户带了 --save 参数，或者手动确认保存
+            if args.save:
+                msg = append_to_bib_file(bib_content)
+                print(f"\n💾 {msg}")
+            else:
+                choice = input("\n❓ 是否将此条目保存到 references.bib? (y/n): ").strip().lower()
+                if choice == 'y':
+                    msg = append_to_bib_file(bib_content)
+                    print(f"💾 {msg}")
+        except Exception as e:
+            print(f"❌ 失败：{str(e)}")
+            sys.exit(1)
+            
     else:
         parser.print_help()
 
