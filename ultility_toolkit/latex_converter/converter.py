@@ -61,18 +61,35 @@ class Text2LaTeXConverter:
     def _format_code_blocks(self, text: str) -> str:
         def replace_code_block(match):
             code = match.group(2)
-            code_escaped = self._escape_special_chars(code)
-            return f"\\begin{{verbatim}}\n{code_escaped}\n\\end{{verbatim}}"
+            return f"\\begin{{verbatim}}\n{code}\n\\end{{verbatim}}"
         return self.CODE_BLOCK_PATTERN.sub(replace_code_block, text)
 
     def convert(self, text: str, add_document_env: bool = True) -> str:
-        text = self._format_code_blocks(text)
+        code_blocks = []
+
+        def stash_code_block(match):
+            token = f"LATEXCODEBLOCK{len(code_blocks)}TOKEN"
+            code_blocks.append(self._format_code_blocks(match.group(0)))
+            return token
+
+        text = self.CODE_BLOCK_PATTERN.sub(stash_code_block, text)
         lines = text.split('\n')
         converted_lines = []
         in_ul_list = False
         in_ol_list = False
 
         for line in lines:
+            if line in {f"LATEXCODEBLOCK{i}TOKEN" for i in range(len(code_blocks))}:
+                if in_ul_list:
+                    converted_lines.append("\\end{itemize}")
+                    in_ul_list = False
+                if in_ol_list:
+                    converted_lines.append("\\end{enumerate}")
+                    in_ol_list = False
+                index = int(line.removeprefix("LATEXCODEBLOCK").removesuffix("TOKEN"))
+                converted_lines.append(code_blocks[index])
+                continue
+
             if line.strip() == "":
                 if in_ul_list:
                     converted_lines.append("\\end{itemize}")

@@ -1,18 +1,13 @@
 import argparse
 import sys
 import os
-import argparse
 import tkinter as tk
 from tkinter import messagebox, scrolledtext
-# 注意：如果包名拼写错误（ultility_toolkit → utility_toolkit），需同步修改
-from ultility_toolkit.latex_table_designer import LaTeXTableDesignerGUI
-from ultility_toolkit.file_tools import FileRenamer, FileConverter, FileSearcher
-from ultility_toolkit.data_viz import DataPlotter, DataAnalyzer
-from ultility_toolkit.network_tools import IPQuery, PortScanner, URLChecker
-from ultility_toolkit.latex_converter import Text2LaTeXConverter
 
 def run_latex_gui():
     """LaTeX转换的GUI入口（左右分栏版）"""
+    from ultility_toolkit.latex_converter import Text2LaTeXConverter
+
     # 主窗口配置
     root = tk.Tk()
     root.title("文本转LaTeX工具 v0.1.0")
@@ -128,9 +123,9 @@ def main():
         return
     
     parser = argparse.ArgumentParser(
-        prog="ultility-toolkit",
-        description="多功能Python实用工具集 v0.1.0 | 支持文件处理/数据可视化/网络工具/文本转LaTeX/LaTeX表格设计",
-        epilog="项目地址：https://github.com/your-username/python-ultility-toolkit"
+        prog="latex-converter",
+        description="LaTeX-Converter v0.1.0 | 支持文本/Markdown风格内容转LaTeX，以及表格代码生成等辅助工具",
+        epilog="项目地址：https://github.com/hope-sun123/LaTeX-Converter"
     )
     subparsers = parser.add_subparsers(dest="command", help="请选择功能模块")
 
@@ -216,6 +211,8 @@ def main():
     # ========== 各功能逻辑（原有+新增） ==========
     if args.command == "rename":
         try:
+            from ultility_toolkit.file_tools import FileRenamer
+
             renamer = FileRenamer(args.dir)
             if args.prefix:
                 res = renamer.rename_by_prefix(args.prefix, ext_filter=args.ext)
@@ -234,10 +231,12 @@ def main():
 
     elif args.command == "file-conv":
         try:
+            from ultility_toolkit.file_tools import FileConverter
+
             if not args.file and not args.dir:
                 print("错误：请指定--file（单个文件）或--dir（目录）")
                 sys.exit(1)
-            conv = FileConverter(dir_path=args.dir, file_path=args.file)
+            conv = FileConverter(target_dir=args.dir, target_file=args.file)
             if args.type == "txt2csv":
                 res = conv.txt2csv(args.delimiter)
             elif args.type == "csv2txt":
@@ -255,6 +254,8 @@ def main():
 
     elif args.command == "file-search":
         try:
+            from ultility_toolkit.file_tools import FileSearcher
+
             searcher = FileSearcher(args.dir)
             if args.type == "name":
                 if not args.keyword:
@@ -279,12 +280,15 @@ def main():
 
     elif args.command == "plot":
         try:
+            from ultility_toolkit.data_viz import DataPlotter
+
             plotter = DataPlotter(args.file)
             title = args.title or f"{args.type}图"
+            y_cols = [args.y_col] if args.y_col else None
             if args.type == "bar":
-                plotter.plot_bar(args.output, args.x_col, args.y_col, title)
+                plotter.plot_bar(args.output, args.x_col, y_cols, title)
             elif args.type == "line":
-                plotter.plot_line(args.output, args.x_col, args.y_col, title)
+                plotter.plot_line(args.output, args.x_col, y_cols, title)
             elif args.type == "pie":
                 plotter.plot_pie(args.output, args.x_col, args.y_col, title)
             elif args.type == "scatter":
@@ -298,6 +302,8 @@ def main():
 
     elif args.command == "data-analyze":
         try:
+            from ultility_toolkit.data_viz import DataAnalyzer
+
             analyzer = DataAnalyzer(args.file)
             if args.type == "basic":
                 res = analyzer.basic_stats()
@@ -317,6 +323,8 @@ def main():
 
     elif args.command == "ip-query":
         try:
+            from ultility_toolkit.network_tools import IPQuery
+
             ipq = IPQuery()
             if args.domain:
                 res = ipq.domain2ip(args.domain)
@@ -331,6 +339,8 @@ def main():
 
     elif args.command == "port-scan":
         try:
+            from ultility_toolkit.network_tools import PortScanner
+
             scanner = PortScanner(args.host)
             if args.common:
                 res = scanner.scan_common_ports()
@@ -346,6 +356,8 @@ def main():
 
     elif args.command == "url-check":
         try:
+            from ultility_toolkit.network_tools import URLChecker
+
             checker = URLChecker()
             if args.file:
                 with open(args.file, 'r', encoding='utf-8') as f:
@@ -366,6 +378,8 @@ def main():
 
     elif args.command == "latex-convert":
         try:
+            from ultility_toolkit.latex_converter import Text2LaTeXConverter
+
             converter = Text2LaTeXConverter()
             add_document_env = args.add_env
             
@@ -405,6 +419,8 @@ def main():
     # ========== 新增：LaTeX表格设计器调用逻辑 ==========
     elif args.command == "latex-table":
         try:
+            from ultility_toolkit.latex_table_designer import LaTeXTableDesignerGUI
+
             print("🚀 启动LaTeX表格可视化设计器...")
             print("💡 提示：关闭设计器窗口即可退出该功能")
             # 实例化并启动表格设计器GUI
