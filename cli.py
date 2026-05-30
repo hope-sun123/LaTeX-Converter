@@ -200,6 +200,12 @@ def main():
     latex_table_parser = subparsers.add_parser("latex-table", help="LaTeX表格可视化设计器（生成tabular代码）")
     # 无需额外参数，仅启动GUI即可
 
+    # 11. 文献BibTeX自动化
+    bib_parser = subparsers.add_parser("bib", help="通过DOI获取BibTeX条目")
+    bib_parser.add_argument("--doi", required=True, help="文献DOI，例如 10.1038/s41586-021-03819-2")
+    bib_parser.add_argument("--output", default="references.bib", help="保存目标 .bib 文件，默认 references.bib")
+    bib_parser.add_argument("--save", action="store_true", help="自动保存到目标 .bib 文件")
+
     args = parser.parse_args()
 
     # 无参数时提示选择功能（原有）
@@ -414,6 +420,31 @@ def main():
                     print("💡 提示：可直接复制插入已有LaTeX文档")
         except Exception as e:
             print(f"失败：{str(e)}")
+            sys.exit(1)
+
+    elif args.command == "bib":
+        try:
+            from ultility_toolkit.bib_manager import append_to_bib_file, get_bibtex_from_doi
+
+            print(f"🔍 正在检索 DOI: {args.doi} ...")
+            bib_content = get_bibtex_from_doi(args.doi)
+
+            print("\n" + "=" * 50)
+            print("✨ 获取到的 BibTeX 条目：")
+            print("-" * 50)
+            print(bib_content)
+            print("=" * 50)
+
+            if args.save:
+                msg = append_to_bib_file(bib_content, args.output)
+                print(f"\n💾 {msg}")
+            else:
+                choice = input(f"\n❓ 是否将此条目保存到 {args.output}? (y/n): ").strip().lower()
+                if choice == "y":
+                    msg = append_to_bib_file(bib_content, args.output)
+                    print(f"💾 {msg}")
+        except Exception as e:
+            print(f"❌ 失败：{str(e)}")
             sys.exit(1)
 
     # ========== 新增：LaTeX表格设计器调用逻辑 ==========
