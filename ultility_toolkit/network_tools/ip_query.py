@@ -1,6 +1,6 @@
 import requests
 import socket
-from typing import Dict, Optional, List  # 核心修复：添加 List 导入
+from typing import Dict, Optional, List  
 
 class IPQuery:
     """IP地址查询/域名解析工具类"""
@@ -15,16 +15,16 @@ class IPQuery:
         """获取本机内网IP（备用：公网IP需额外接口）"""
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            # 连接到公共DNS，仅用于获取本机出口IP，不发送数据
+           
             s.connect(("8.8.8.8", 80))
             local_ip = s.getsockname()[0]
             s.close()
             return local_ip
-        except Exception as e:  # 补全异常捕获的变量名
+        except Exception as e:  
             print(f"获取本机IP失败，使用默认值：{e}")
             return "127.0.0.1"
 
-    def query(self, ip: Optional[str] = None) -> Dict[str, str]:  # 补全返回值类型注解
+    def query(self, ip: Optional[str] = None) -> Dict[str, str]:  
         """
         查询IP地址的详细信息
         :param ip: 待查询IP，None则查本机内网IP
@@ -36,13 +36,13 @@ class IPQuery:
                 url=f"http://ip-api.com/json/{ip}?lang=zh-CN",
                 timeout=self.timeout
             )
-            res.raise_for_status()  # 触发HTTP状态码异常
+            res.raise_for_status()  
             data = res.json()
             
             if data.get("status") != "success":
                 return {"错误": data.get("message", "查询失败")}
             
-            # 格式化返回结果，避免None值显示异常
+          
             return {
                 "查询IP": ip,
                 "国家": data.get("country") or "未知",
@@ -58,16 +58,16 @@ class IPQuery:
         except Exception as e:
             return {"错误": f"查询失败: {str(e)}"}
 
-    def domain2ip(self, domain: str) -> List[str]:  # 现在List已导入，不会报错
+    def domain2ip(self, domain: str) -> List[str]:  
         """
         解析域名对应的IP列表
         :param domain: 待解析域名（如baidu.com）
         :return: IP列表，失败则返回错误信息列表
         """
         try:
-            # 获取域名的所有IPv4地址
+            
             ip_list = [info[4][0] for info in socket.getaddrinfo(domain, 80) if info[0] == socket.AF_INET]
-            # 去重并返回，避免重复IP
+           
             unique_ips = list(set(ip_list))
             return unique_ips if unique_ips else ["未解析到IP地址"]
         except socket.gaierror as e:
@@ -75,15 +75,15 @@ class IPQuery:
         except Exception as e:
             return [f"错误: {str(e)}"]
 
-# 测试代码（可选，方便调试）
+
 if __name__ == "__main__":
     ipq = IPQuery()
-    # 测试IP查询
+    
     print("=== 本机IP信息 ===")
     for k, v in ipq.query().items():
         print(f"{k}: {v}")
     
-    # 测试域名解析
+   
     print("\n=== 百度域名解析 ===")
     ips = ipq.domain2ip("baidu.com")
     for ip in ips:
