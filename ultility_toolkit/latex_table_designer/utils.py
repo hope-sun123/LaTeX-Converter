@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+
 """表格设计器辅助工具"""
 
 def validate_table_params(rows, cols):
