@@ -8,32 +8,30 @@ def run_latex_gui():
     """LaTeX转换的GUI入口（左右分栏版）"""
     from ultility_toolkit.latex_converter import Text2LaTeXConverter
 
-    # 主窗口配置
+  
     root = tk.Tk()
     root.title("文本转LaTeX工具 v0.1.0")
-    root.geometry("1000x600")  # 加宽窗口，适配左右分栏
+    root.geometry("1000x600")  
     root.resizable(True, True)
 
-    # ========== 左右分栏布局 ==========
-    # 左侧：原始文本输入框
+ 
     left_frame = tk.Frame(root, padx=10, pady=10)
     left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
     tk.Label(left_frame, text="📝 原始文本", font=("微软雅黑", 12)).pack(anchor=tk.NW)
     
-    # 带滚动条的文本输入框
+  
     input_text = scrolledtext.ScrolledText(left_frame, width=50, height=25, font=("Consolas", 10))
     input_text.pack(fill=tk.BOTH, expand=True, pady=5)
 
-    # 右侧：转换结果显示框
+  
     right_frame = tk.Frame(root, padx=10, pady=10)
     right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
     tk.Label(right_frame, text="✨ 转换结果", font=("微软雅黑", 12)).pack(anchor=tk.NW)
     
-    # 带滚动条的结果显示框（只读）
     output_text = scrolledtext.ScrolledText(right_frame, width=50, height=25, font=("Consolas", 10), state=tk.DISABLED)
     output_text.pack(fill=tk.BOTH, expand=True, pady=5)
 
-    # ========== 转换功能函数 ==========
+ 
     def convert_full():
         """转换为完整LaTeX文档"""
         text = input_text.get("1.0", tk.END).strip()
@@ -43,7 +41,7 @@ def run_latex_gui():
         try:
             converter = Text2LaTeXConverter()
             latex_content = converter.convert(text, add_document_env=True)
-            # 更新结果框
+          
             output_text.config(state=tk.NORMAL)
             output_text.delete("1.0", tk.END)
             output_text.insert("1.0", latex_content)
@@ -61,7 +59,7 @@ def run_latex_gui():
         try:
             converter = Text2LaTeXConverter()
             latex_content = converter.convert(text, add_document_env=False)
-            # 更新结果框
+         
             output_text.config(state=tk.NORMAL)
             output_text.delete("1.0", tk.END)
             output_text.insert("1.0", latex_content)
@@ -77,11 +75,11 @@ def run_latex_gui():
         output_text.delete("1.0", tk.END)
         output_text.config(state=tk.DISABLED)
 
-    # ========== 按钮区域 ==========
+    
     btn_frame = tk.Frame(root, pady=10)
     btn_frame.pack(side=tk.BOTTOM, fill=tk.X)
     
-    # 转换按钮
+    
     tk.Button(
         btn_frame, text="📄 转换为完整LaTeX文档", 
         command=convert_full, width=20, height=2, font=("微软雅黑", 10)
@@ -92,13 +90,13 @@ def run_latex_gui():
         command=convert_fragment, width=20, height=2, font=("微软雅黑", 10)
     ).pack(side=tk.LEFT, padx=20)
     
-    # 清空按钮
+   
     tk.Button(
         btn_frame, text="🗑️ 清空内容", 
         command=clear_text, width=15, height=2, font=("微软雅黑", 10)
     ).pack(side=tk.LEFT, padx=20)
 
-    # 启动主循环
+    
     root.mainloop()
 
 def choose_latex_mode() -> bool:
@@ -117,9 +115,9 @@ def choose_latex_mode() -> bool:
             print(f"输入无效：{user_choice}，请输入1或2！")
 
 def main():
-    # 无命令行参数时启动GUI（保留原有逻辑，可选择是否整合表格设计器到主GUI）
+  
     if len(sys.argv) == 1:
-        run_latex_gui()  # 原有LaTeX转换GUI，若需替换为表格设计器可改为：LaTeXTableDesignerGUI().run()
+        run_latex_gui()  
         return
     
     parser = argparse.ArgumentParser(
@@ -128,8 +126,7 @@ def main():
         epilog="项目地址：https://github.com/hope-sun123/LaTeX-Converter"
     )
     subparsers = parser.add_subparsers(dest="command", help="请选择功能模块")
-
-    # 1. 文件重命名（原有）
+ 
     rename_parser = subparsers.add_parser("rename", help="文件批量重命名")
     rename_parser.add_argument("--dir", required=True, help="目标目录")
     rename_parser.add_argument("--prefix", help="前缀重命名（如--prefix file_）")
@@ -139,7 +136,6 @@ def main():
     rename_parser.add_argument("--regex-repl", help="正则替换值")
     rename_parser.add_argument("--ext", help="扩展名过滤（如.txt）")
 
-    # 2. 文件格式转换（原有）
     file_conv_parser = subparsers.add_parser("file-conv", help="文件格式转换")
     file_conv_parser.add_argument("--file", help="单个目标文件")
     file_conv_parser.add_argument("--dir", help="目标目录")
@@ -148,7 +144,7 @@ def main():
     file_conv_parser.add_argument("--new-ext", help="新扩展名（change-ext时用）")
     file_conv_parser.add_argument("--delimiter", default=",", help="分隔符（默认,）")
 
-    # 3. 文件检索（原有）
+ 
     file_search_parser = subparsers.add_parser("file-search", help="文件内容/名称检索")
     file_search_parser.add_argument("--dir", required=True, help="目标目录")
     file_search_parser.add_argument("--keyword", help="检索关键词（name/content时用）")
@@ -157,7 +153,7 @@ def main():
     file_search_parser.add_argument("--min-size", type=int, help="最小文件大小(字节)")
     file_search_parser.add_argument("--max-size", type=int, help="最大文件大小(字节)")
 
-    # 4. 数据可视化（原有）
+ 
     plot_parser = subparsers.add_parser("plot", help="数据可视化绘图")
     plot_parser.add_argument("--file", required=True, help="CSV/Excel数据文件")
     plot_parser.add_argument("--type", required=True, choices=["bar", "line", "pie", "scatter", "hist"], help="图表类型")
@@ -166,41 +162,41 @@ def main():
     plot_parser.add_argument("--x-col", help="X轴列名")
     plot_parser.add_argument("--y-col", help="Y轴列名")
 
-    # 5. 数据统计分析（原有）
+    
     data_analyze_parser = subparsers.add_parser("data-analyze", help="数据统计分析")
     data_analyze_parser.add_argument("--file", required=True, help="CSV/Excel数据文件")
     data_analyze_parser.add_argument("--type", required=True, choices=["basic", "corr", "missing", "outlier"], help="分析类型")
     data_analyze_parser.add_argument("--col", help="分析列名（outlier时必填）")
 
-    # 6. IP查询（原有）
+  
     ip_query_parser = subparsers.add_parser("ip-query", help="IP地址/域名解析")
     ip_query_parser.add_argument("--ip", help="查询IP（默认本机）")
     ip_query_parser.add_argument("--domain", help="解析域名到IP")
 
-    # 7. 端口扫描（原有）
+    
     port_scan_parser = subparsers.add_parser("port-scan", help="端口扫描")
     port_scan_parser.add_argument("--host", required=True, help="目标主机/IP")
     port_scan_parser.add_argument("--start", type=int, default=1, help="起始端口")
     port_scan_parser.add_argument("--end", type=int, default=1024, help="结束端口")
     port_scan_parser.add_argument("--common", action="store_true", help="扫描常见端口并显示服务")
 
-    # 8. URL检测（原有）
+    
     url_check_parser = subparsers.add_parser("url-check", help="URL有效性检测")
     url_check_parser.add_argument("--url", help="单个检测URL")
     url_check_parser.add_argument("--file", help="批量检测URL文件（每行一个URL）")
 
-    # 9. LaTeX转换（原有）
+  
     latex_parser = subparsers.add_parser("latex-convert", help="文本转LaTeX格式")
     latex_parser.add_argument("--input", help="输入文本文件")
     latex_parser.add_argument("--output", help="输出LaTeX文件")
     latex_parser.add_argument("--no-env", action="store_false", dest="add_env", default=True, 
                              help="直接生成无环境的文段片段")
 
-    # ========== 新增：10. LaTeX表格设计器 ==========
+  
     latex_table_parser = subparsers.add_parser("latex-table", help="LaTeX表格可视化设计器（生成tabular代码）")
-    # 无需额外参数，仅启动GUI即可
+   
 
-    # 11. 文献BibTeX自动化
+ 
     bib_parser = subparsers.add_parser("bib", help="通过DOI获取BibTeX条目")
     bib_parser.add_argument("--doi", required=True, help="文献DOI，例如 10.1038/s41586-021-03819-2")
     bib_parser.add_argument("--output", default="references.bib", help="保存目标 .bib 文件，默认 references.bib")
@@ -208,13 +204,13 @@ def main():
 
     args = parser.parse_args()
 
-    # 无参数时提示选择功能（原有）
+    
     if not args.command:
         print("❌ 错误：请指定要运行的功能模块！")
         parser.print_help()
         sys.exit(1)
 
-    # ========== 各功能逻辑（原有+新增） ==========
+   
     if args.command == "rename":
         try:
             from ultility_toolkit.file_tools import FileRenamer
@@ -389,7 +385,7 @@ def main():
             converter = Text2LaTeXConverter()
             add_document_env = args.add_env
             
-            # 修复：交互选择逻辑（args.add_env默认是True，仅未传--no-env时弹出选择）
+            
             if args.add_env is None:
                 add_document_env = choose_latex_mode()
             else:
@@ -400,7 +396,7 @@ def main():
                 print(f"\n📂 读取文件：{os.path.abspath(args.input)}")
                 latex_content = converter.from_file(args.input, args.output, add_document_env)
             else:
-                # 仅当未传--no-env时才弹出模式选择
+            
                 if args.add_env:
                     add_document_env = choose_latex_mode()
                 print("\n✏️  请输入待转换文本（Ctrl+D/Linux/Ctrl+Z/Windows结束）：")
@@ -447,14 +443,14 @@ def main():
             print(f"❌ 失败：{str(e)}")
             sys.exit(1)
 
-    # ========== 新增：LaTeX表格设计器调用逻辑 ==========
+    
     elif args.command == "latex-table":
         try:
             from ultility_toolkit.latex_table_designer import LaTeXTableDesignerGUI
 
             print("🚀 启动LaTeX表格可视化设计器...")
             print("💡 提示：关闭设计器窗口即可退出该功能")
-            # 实例化并启动表格设计器GUI
+           
             table_designer = LaTeXTableDesignerGUI()
             table_designer.run()
             print("✅ 表格设计器已正常退出")
