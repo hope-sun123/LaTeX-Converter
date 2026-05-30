@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+
 """LaTeX表格代码生成核心逻辑（独立无依赖）"""
 
 class LaTeXTableGenerator:
@@ -14,7 +13,7 @@ class LaTeXTableGenerator:
         """更新表格配置（支持部分参数更新）"""
         if rows is not None and rows >= 1:
             self.rows = rows
-            # 同步更新单元格（补空/删行）
+        
             if len(self.cells) < self.rows:
                 for _ in range(self.rows - len(self.cells)):
                     self.cells.append(["" for _ in range(self.cols)])
@@ -23,7 +22,7 @@ class LaTeXTableGenerator:
         
         if cols is not None and cols >= 1:
             self.cols = cols
-            # 同步更新单元格（补空/删列）
+            
             for i in range(len(self.cells)):
                 if len(self.cells[i]) < self.cols:
                     self.cells[i].extend(["" for _ in range(self.cols - len(self.cells[i]))])
@@ -43,25 +42,25 @@ class LaTeXTableGenerator:
 
     def generate_code(self):
         """生成最终的LaTeX tabular代码"""
-        # 1. 构建列格式（如 |c|c| 或 cc）
+       
         col_format = self.align * self.cols
         if self.has_border:
             col_format = "|" + "|".join(list(col_format)) + "|"
         
-        # 2. 构建表格主体
+      
         latex_code = f"\\begin{{tabular}}{{{col_format}}}\n"
         if self.has_border:
             latex_code += "    \\hline\n"
         
-        # 3. 拼接每行内容
+       
         for i, row in enumerate(self.cells):
             row_content = "    " + " & ".join(row) + " \\\\"
             latex_code += row_content + "\n"
-            # 边框模式下，除最后一行外都加横线
+            
             if self.has_border and i < self.rows - 1:
                 latex_code += "    \\hline\n"
         
-        # 4. 末尾横线+闭合标签
+        
         if self.has_border:
             latex_code += "    \\hline\n"
         latex_code += "\\end{tabular}"
