@@ -398,7 +398,12 @@ def main():
             else:
             
                 if args.add_env:
-                    add_document_env = choose_latex_mode()
+                    if sys.stdin.isatty():
+                        add_document_env = choose_latex_mode()
+                    else:
+                        # Piped/redirected stdin holds the content to convert;
+                        # prompting here would consume it, so keep the default.
+                        add_document_env = True
                 print("\n✏️  请输入待转换文本（Ctrl+D/Linux/Ctrl+Z/Windows结束）：")
                 text = sys.stdin.read()
                 latex_content = converter.convert(text, add_document_env)
